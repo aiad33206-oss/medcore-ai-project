@@ -1,0 +1,140 @@
+/* ═══════════════════════════════════════════════
+   MedCore AI — Global Styles
+   Copyright © 2025 abdoayad
+   ═══════════════════════════════════════════════ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Dark theme (default) */
+  --bg:        #04060D;
+  --surface:   #080C18;
+  --card:      #0C1022;
+  --card-hover:#101428;
+  --border:    rgba(255,255,255,0.07);
+  --border-lg: rgba(255,255,255,0.12);
+
+  --teal:      #00F5D4;
+  --teal-dim:  #00C4AA;
+  --violet:    #8B5CF6;
+  --violet-dim:#6D3FD4;
+  --gold:      #FBBF24;
+  --pink:      #F472B6;
+  --green:     #34D399;
+  --blue:      #60A5FA;
+
+  --white:     #FFFFFF;
+  --g100:      #F1F5F9;
+  --g300:      #94A3B8;
+  --g500:      #475569;
+  --g700:      #1E293B;
+  --g900:      #0F172A;
+
+  --font-ar:   'IBM Plex Sans Arabic', sans-serif;
+  --font-en:   'Space Grotesk', sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+}
+
+.light {
+  --bg:        #F8FAFC;
+  --surface:   #FFFFFF;
+  --card:      #FFFFFF;
+  --card-hover:#F1F5F9;
+  --border:    rgba(0,0,0,0.08);
+  --border-lg: rgba(0,0,0,0.14);
+
+  --white:     #0F172A;
+  --g100:      #1E293B;
+  --g300:      #475569;
+  --g500:      #94A3B8;
+  --g700:      #CBD5E1;
+  --g900:      #F1F5F9;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: var(--font-ar);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Direction-aware utility */
+[dir="ltr"] body { font-family: var(--font-en), var(--font-ar); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--g700); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--g500); }
+
+::selection { background: rgba(0,245,212,0.2); }
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+a { color: inherit; }
+button { font-family: var(--font-ar); }
+
+/* Noise texture */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px;
+}
+
+/* Animations */
+@keyframes pulse-dot { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.85); } }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+@keyframes orb-float {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33% { transform: translate(20px,-15px) scale(1.05); }
+  66% { transform: translate(-10px,10px) scale(0.97); }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--surface) 25%, var(--card) 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Glass card utility */
+.glass {
+  background: rgba(12,16,34,0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+}
+.light .glass {
+  background: rgba(255,255,255,0.85);
+}
+
+/* Focus visibility for accessibility */
+:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .no-print { display: none !important; }
+}

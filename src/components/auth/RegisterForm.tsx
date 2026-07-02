@@ -2,82 +2,126 @@
 // MedCore AI — Register Form (client component)
 // Copyright © abdoayad
 // ═══════════════════════════════════════════════
+
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState } from 'react'
 import { registerAction } from '@/lib/supabase/actions'
+
+const inputClass =
+  'w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-border text-white text-sm outline-none placeholder:text-g500 focus:border-teal/50 focus:ring-2 focus:ring-teal/10 transition-colors'
 
 export function RegisterForm() {
   const [error, setError] = useState<string | null>(null)
-  const [isPending, startTransition] = useTransition()
+  const [isPending, setIsPending] = useState(false)
 
-  function handleSubmit(formData: FormData) {
+  async function handleSubmit(formData: FormData) {
     setError(null)
-    startTransition(async () => {
+    setIsPending(true)
+
+    try {
       const result = await registerAction(formData)
+
       if (result && 'error' in result) {
         setError(result.error)
       }
-      // On success, registerAction redirects server-side — no client code runs after
-    })
+    } finally {
+      setIsPending(false)
+    }
   }
 
   return (
-    <form action={handleSubmit} className="flex flex-col gap-4">
+    <form action={handleSubmit} className="flex flex-col gap-4" aria-busy={isPending}>
       <div>
-        <label className="block text-sm text-g300 mb-2 font-medium">الاسم كامل</label>
+        <label className="block text-sm text-g300 mb-2 font-medium">
+          الاسم كامل
+        </label>
         <input
           name="full_name"
           type="text"
           required
+          autoComplete="name"
           dir="rtl"
           placeholder="اسمك بالكامل"
-          className="w-full px-4 py-3 rounded-lg bg-white/[0.04] border border-border text-white text-sm outline-none focus:border-teal/40 transition-colors"
+          className={inputClass}
         />
       </div>
 
       <div>
-        <label className="block text-sm text-g300 mb-2 font-medium">البريد الإلكتروني</label>
+        <label className="block text-sm text-g300 mb-2 font-medium">
+          الجامعة
+        </label>
+        <input
+          name="university"
+          type="text"
+          required
+          autoComplete="organization"
+          dir="rtl"
+          defaultValue="جامعة الأزهر"
+          placeholder="مثال: جامعة الأزهر"
+          className={inputClass}
+        />
+        <p className="mt-2 text-xs text-g500">
+          اكتب اسم الجامعة كما تريد ظهوره داخل حسابك.
+        </p>
+      </div>
+
+      <div>
+        <label className="block text-sm text-g300 mb-2 font-medium">
+          السنة الدراسية
+        </label>
+        <select
+          name="study_year"
+          required
+          defaultValue=""
+          dir="rtl"
+          className={inputClass}
+        >
+          <option value="" className="bg-card">
+            اختر السنة
+          </option>
+          <option value="1" className="bg-card">السنة الأولى</option>
+          <option value="2" className="bg-card">السنة الثانية</option>
+          <option value="3" className="bg-card">السنة الثالثة</option>
+          <option value="4" className="bg-card">السنة الرابعة</option>
+          <option value="5" className="bg-card">السنة الخامسة</option>
+          <option value="6" className="bg-card">السنة السادسة</option>
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-sm text-g300 mb-2 font-medium">
+          البريد الإلكتروني
+        </label>
         <input
           name="email"
           type="email"
           required
+          autoComplete="email"
           dir="rtl"
           placeholder="you@example.com"
-          className="w-full px-4 py-3 rounded-lg bg-white/[0.04] border border-border text-white text-sm outline-none focus:border-teal/40 transition-colors"
+          className={inputClass}
         />
       </div>
 
       <div>
-        <label className="block text-sm text-g300 mb-2 font-medium">كلمة المرور</label>
+        <label className="block text-sm text-g300 mb-2 font-medium">
+          كلمة المرور
+        </label>
         <input
           name="password"
           type="password"
           required
           minLength={8}
+          autoComplete="new-password"
           dir="rtl"
           placeholder="8 حروف على الأقل"
-          className="w-full px-4 py-3 rounded-lg bg-white/[0.04] border border-border text-white text-sm outline-none focus:border-teal/40 transition-colors"
+          className={inputClass}
         />
       </div>
 
-      <div>
-        <label className="block text-sm text-g300 mb-2 font-medium">السنة الدراسية</label>
-        <select
-          name="study_year"
-          required
-          dir="rtl"
-          className="w-full px-4 py-3 rounded-lg bg-white/[0.04] border border-border text-white text-sm outline-none focus:border-teal/40 transition-colors"
-        >
-          <option value="">اختر السنة</option>
-          {[1, 2, 3, 4, 5, 6].map(y => (
-            <option key={y} value={y}>السنة {y === 1 ? 'الأولى' : y === 2 ? 'الثانية' : y === 3 ? 'الثالثة' : y === 4 ? 'الرابعة' : y === 5 ? 'الخامسة' : 'السادسة'}</option>
-          ))}
-        </select>
-      </div>
-
       {error && (
-        <div className="px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+        <div className="rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-red-300 text-sm">
           {error}
         </div>
       )}
@@ -85,7 +129,7 @@ export function RegisterForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full py-3.5 rounded-lg bg-teal text-bg font-bold text-sm mt-2 disabled:opacity-50 transition-opacity"
+        className="mt-2 w-full rounded-xl bg-teal px-4 py-3.5 font-bold text-bg text-sm transition-transform duration-200 hover:scale-[1.01] disabled:opacity-60 disabled:hover:scale-100"
       >
         {isPending ? 'جاري إنشاء الحساب...' : 'إنشاء الحساب'}
       </button>

@@ -5,7 +5,7 @@
 
 'use server'
 
-import { createServerClient, createServiceClient } from '@/lib/supabase/client'
+import { createServerClient } from '@/lib/supabase/client'
 import { redirect } from 'next/navigation'
 
 export type AuthResult = { error: string } | { success: true }
@@ -14,7 +14,7 @@ function normalizeEmail(email: string) {
   return email.trim().toLowerCase()
 }
 
-function mapSignUpError(message: string) {
+function mapAuthError(message: string) {
   const msg = message.toLowerCase()
 
   if (
@@ -25,12 +25,12 @@ function mapSignUpError(message: string) {
     return 'البريد الإلكتروني ده مسجل قبل كده'
   }
 
-  if (msg.includes('password') && msg.includes('short')) {
-    return 'كلمة المرور قصيرة جدًا'
+  if (msg.includes('email') && msg.includes('invalid')) {
+    return 'البريد الإلكتروني غير صحيح'
   }
 
-  if (msg.includes('invalid') && msg.includes('email')) {
-    return 'البريد الإلكتروني غير صحيح'
+  if (msg.includes('password') && msg.includes('short')) {
+    return 'كلمة المرور قصيرة جدًا'
   }
 
   return 'حصل خطأ، حاول تاني'
@@ -40,11 +40,13 @@ export async function registerAction(formData: FormData): Promise<AuthResult> {
   const email = normalizeEmail(String(formData.get('email') ?? ''))
   const password = String(formData.get('password') ?? '')
   const fullName = String(formData.get('full_name') ?? '').trim()
-  const university = String(formData.get('university') ?? '').trim() || 'جامعة الأزهر'
   const studyYearRaw = String(formData.get('study_year') ?? '').trim()
-  const studyYear = Number(studyYearRaw)
+  const universityRaw = String(formData.get('university') ?? '').trim()
 
-  if (!email || !password || !fullName || !university || !studyYearRaw) {
+  const studyYear = Number(studyYearRaw)
+  const university = universityRaw || 'Al-Azhar University'
+
+  if (!email || !password || !fullName || !studyYearRaw) {
     return { error: 'من فضلك اكمل كل الحقول' }
   }
 
@@ -71,18 +73,16 @@ export async function registerAction(formData: FormData): Promise<AuthResult> {
   })
 
   if (error) {
-    return { error: mapSignUpError(error.message) }
+    return { error: mapAuthError(error.message) }
   }
 
   if (!data.user) {
     return { error: 'حصل خطأ في إنشاء الحساب' }
   }
 
-  try {
-    const adminClient =
-      process.env.SUPABASE_SERVICE_ROLE_KEY ? createServiceClient() : supabase
-
-    const { error: profileError } = await adminClient.from('profiles').upsert(
+  const { error: profileError } = await supabase
+    .from('profiles')
+    .upsert(
       {
         id: data.user.id,
         email: data.user.email ?? email,
@@ -90,17 +90,14 @@ export async function registerAction(formData: FormData): Promise<AuthResult> {
         university,
         study_year: studyYear,
         metadata: {
-          source: 'register_action',
+          source: 'registerAction',
         },
       },
       { onConflict: 'id' }
     )
 
-    if (profileError) {
-      console.error('Profile sync failed:', profileError)
-    }
-  } catch (profileSyncError) {
-    console.error('Profile sync threw:', profileSyncError)
+  if (profileError) {
+    console.error('Profile upsert error:', profileError)
   }
 
   if (data.session) {
@@ -109,6 +106,36 @@ export async function registerAction(formData: FormData): Promise<AuthResult> {
 
   redirect('/login?registered=1')
 }
+
+export async function loginAction(formData: FormData): Promise<AuthResult> {
+  const email = normalizeEmail(String(formData.get('email') ?? ''))
+  const password = String(formData.get('password') ?? '')
+
+  if (!email || !password) {
+    return { error: 'من فضلك اكمل البريد الإلكتروني وكلمة المرور' }
+  }
+
+  const supabase = await createServerClient()
+  const { error } = await supabase.auth.signInWithPassword({ email, password })
+
+  if (error) {
+    const msg = error.message.toLowerCase()
+
+    if (msg.includes('email not confirmed')) {
+      return { error: 'فعّل البريد الإلكتروني ثم حاول الدخول مرة أخرى' }
+    }
+
+    return { error: 'البريد الإلكتروني أو كلمة المرور غلط' }
+  }
+
+  redirect('/dashboard')
+}
+
+export async function logoutAction(): Promise<void> {
+  const supabase = await createServerClient()
+  await supabase.auth.signOut()
+  redirect('/')
+            }}
 
 export async function loginAction(formData: FormData): Promise<AuthResult> {
   const email = normalizeEmail(String(formData.get('email') ?? ''))

@@ -57,12 +57,12 @@ export function RegisterForm() {
           required
           autoComplete="organization"
           dir="rtl"
-          defaultValue="جامعة الأزهر"
-          placeholder="مثال: جامعة الأزهر"
+          defaultValue="Al-Azhar University"
+          placeholder="مثال: Al-Azhar University"
           className={inputClass}
         />
         <p className="mt-2 text-xs text-g500">
-          اكتب اسم الجامعة كما تريد ظهوره داخل حسابك.
+          سيظهر هذا الاسم داخل الملف الشخصي والداشبورد.
         </p>
       </div>
 

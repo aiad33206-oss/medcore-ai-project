@@ -1,4 +1,4 @@
-Enter// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 // MedCore AI — Login Page
 // Copyright © abdoayad
 // ═══════════════════════════════════════════════
@@ -88,4 +88,4 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
       </div>
     </main>
   )
-}
+    }

@@ -31,14 +31,25 @@ export async function registerAction(formData: FormData): Promise<AuthResult> {
         university,
         study_year,
       },
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback`,
     },
   })
 
   if (error || !data.user) {
-    return { error: 'فشل إنشاء الحساب' }
+    return { error: error?.message || 'فشل إنشاء الحساب' }
   }
 
-  redirect('/login?registered=1')
+  // Automatically sign in the user after registration
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  })
+
+  if (signInError) {
+    return { error: 'تم إنشاء الحساب بنجاح. يرجى تسجيل الدخول يدوياً' }
+  }
+
+  redirect('/dashboard')
 }
 
 export async function loginAction(formData: FormData): Promise<AuthResult> {

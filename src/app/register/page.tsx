@@ -3,11 +3,18 @@
 // Copyright © abdoayad
 // ═══════════════════════════════════════════════
 
+import Link from 'next/link'
+import { RegisterForm } from '@/components/auth/RegisterForm'
+
+export const metadata = {
+  title: 'إنشاء حساب',
+}
+
 export default function RegisterPage() {
   return (
-    <main className="min-h-screen bg-bg px-6 flex items-center justify-center text-white">
+    <main className="min-h-screen bg-bg flex items-center justify-center px-6 text-white">
       <div className="w-full max-w-md">
-        
+
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold">إنشاء حساب</h1>
           <p className="text-sm text-g300 mt-2">

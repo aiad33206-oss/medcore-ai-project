@@ -20,54 +20,79 @@ export async function registerAction(formData: FormData): Promise<AuthResult> {
     return { error: 'من فضلك اكمل كل الحقول' }
   }
 
-  const supabase = await createServerClient()
+  try {
+    const supabase = await createServerClient()
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        full_name,
-        university,
-        study_year,
+    // First, try to sign up
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name,
+          university,
+          study_year,
+        },
       },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback`,
-    },
-  })
+    })
 
-  if (error || !data.user) {
-    return { error: error?.message || 'فشل إنشاء الحساب' }
+    if (signUpError) {
+      return { error: signUpError.message || 'فشل إنشاء الحساب' }
+    }
+
+    if (!signUpData.user) {
+      return { error: 'فشل إنشاء الحساب' }
+    }
+
+    // Then try to sign in
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    if (signInError) {
+      return { error: 'تم إنشاء الحساب. الرجاء إعادة محاولة تسجيل الدخول.' }
+    }
+
+    redirect('/dashboard')
+  } catch (error) {
+    console.error('[v0] Registration error:', error)
+    return { error: 'حدث خطأ أثناء إنشاء الحساب' }
   }
-
-  // Automatically sign in the user after registration
-  const { error: signInError } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  })
-
-  if (signInError) {
-    return { error: 'تم إنشاء الحساب بنجاح. يرجى تسجيل الدخول يدوياً' }
-  }
-
-  redirect('/dashboard')
 }
 
 export async function loginAction(formData: FormData): Promise<AuthResult> {
   const email = normalizeEmail(String(formData.get('email') ?? ''))
   const password = String(formData.get('password') ?? '')
 
-  const supabase = await createServerClient()
-
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  })
-
-  if (error) {
-    return { error: 'بيانات الدخول غير صحيحة' }
+  if (!email || !password) {
+    return { error: 'الرجاء إدخال البريد الإلكتروني وكلمة المرور' }
   }
 
-  redirect('/dashboard')
+  try {
+    const supabase = await createServerClient()
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    if (error) {
+      // More specific error messages
+      if (error.message.includes('Invalid login credentials')) {
+        return { error: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' }
+      }
+      if (error.message.includes('Email not confirmed')) {
+        return { error: 'يرجى تأكيد بريدك الإلكتروني أولاً' }
+      }
+      return { error: error.message || 'فشل تسجيل الدخول' }
+    }
+
+    redirect('/dashboard')
+  } catch (error) {
+    console.error('[v0] Login error:', error)
+    return { error: 'حدث خطأ أثناء تسجيل الدخول' }
+  }
 }
 
 export async function logoutAction() {

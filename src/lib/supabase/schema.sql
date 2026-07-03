@@ -383,3 +383,60 @@ cross join (values
   ('أمراض الكلى',                   'Renal Pathology',  'renal',        6)
 ) as s(name_ar, name_en, slug, ord)
 where m.slug = 'pathology';
+-- ─────────────────────────────────────────────
+-- AUTH → PROFILES SYNC
+-- ─────────────────────────────────────────────
+
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.profiles (
+    id,
+    email,
+    full_name,
+    university,
+    study_year,
+    metadata
+  )
+  values (
+    new.id,
+    new.email,
+    coalesce(
+      nullif(trim(new.raw_user_meta_data->>'full_name'), ''),
+      split_part(coalesce(new.email, ''), '@', 1)
+    ),
+    coalesce(
+      nullif(trim(new.raw_user_meta_data->>'university'), ''),
+      'Al-Azhar University'
+    ),
+    nullif(new.raw_user_meta_data->>'study_year', '')::smallint,
+    coalesce(new.raw_user_meta_data, '{}'::jsonb)
+  )
+  on conflict (id) do update
+    set
+      email = excluded.email,
+      full_name = excluded.full_name,
+      university = excluded.university,
+      study_year = excluded.study_year,
+      metadata = excluded.metadata,
+      updated_at = now();
+
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+
+create trigger on_auth_user_created
+after insert on auth.users
+for each row
+execute function public.handle_new_user();
+
+create policy "profiles_insert"
+on profiles
+for insert
+with check (auth.uid() = id);

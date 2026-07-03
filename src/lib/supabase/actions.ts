@@ -1,11 +1,7 @@
-// ═══════════════════════════════════════════════
-// MedCore AI — Auth Server Actions
-// Copyright © abdoayad
-// ═══════════════════════════════════════════════
-
 'use server'
 
-import { createServerClient } from '@/lib/supabase/client'
+import { createServerClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { redirect } from 'next/navigation'
 
 export type AuthResult = { error: string } | { success: true }
@@ -14,48 +10,15 @@ function normalizeEmail(email: string) {
   return email.trim().toLowerCase()
 }
 
-function mapAuthError(message: string) {
-  const msg = message.toLowerCase()
-
-  if (
-    msg.includes('already registered') ||
-    msg.includes('already been registered') ||
-    msg.includes('user already exists')
-  ) {
-    return 'البريد الإلكتروني ده مسجل قبل كده'
-  }
-
-  if (msg.includes('email') && msg.includes('invalid')) {
-    return 'البريد الإلكتروني غير صحيح'
-  }
-
-  if (msg.includes('password') && msg.includes('short')) {
-    return 'كلمة المرور قصيرة جدًا'
-  }
-
-  return 'حصل خطأ، حاول تاني'
-}
-
 export async function registerAction(formData: FormData): Promise<AuthResult> {
   const email = normalizeEmail(String(formData.get('email') ?? ''))
   const password = String(formData.get('password') ?? '')
   const fullName = String(formData.get('full_name') ?? '').trim()
-  const studyYearRaw = String(formData.get('study_year') ?? '').trim()
-  const universityRaw = String(formData.get('university') ?? '').trim()
+  const university = String(formData.get('university') ?? '').trim()
+  const studyYear = Number(formData.get('study_year'))
 
-  const studyYear = Number(studyYearRaw)
-  const university = universityRaw || 'Al-Azhar University'
-
-  if (!email || !password || !fullName || !studyYearRaw) {
+  if (!email || !password || !fullName || !university || !studyYear) {
     return { error: 'من فضلك اكمل كل الحقول' }
-  }
-
-  if (password.length < 8) {
-    return { error: 'كلمة المرور لازم تكون 8 حروف على الأقل' }
-  }
-
-  if (!Number.isInteger(studyYear) || studyYear < 1 || studyYear > 6) {
-    return { error: 'اختر سنة دراسية صحيحة' }
   }
 
   const supabase = await createServerClient()
@@ -64,51 +27,50 @@ export async function registerAction(formData: FormData): Promise<AuthResult> {
     email,
     password,
     options: {
-      data: {
-        full_name: fullName,
-        university,
-        study_year: studyYear,
-      },
+      data: { full_name: fullName, university, study_year: studyYear },
     },
   })
 
-  if (error) {
-    return { error: mapAuthError(error.message) }
+  if (error || !data.user) {
+    return { error: 'فشل إنشاء الحساب' }
   }
 
-  if (!data.user) {
-    return { error: 'حصل خطأ في إنشاء الحساب' }
-  }
+  const admin = createServiceClient()
 
-  const { error: profileError } = await supabase
-    .from('profiles')
-    .upsert(
-      {
-        id: data.user.id,
-        email: data.user.email ?? email,
-        full_name: fullName,
-        university,
-        study_year: studyYear,
-        metadata: {
-          source: 'registerAction',
-        },
-      },
-      { onConflict: 'id' }
-    )
-
-  if (profileError) {
-    console.error('Profile upsert error:', profileError)
-  }
-
-  if (data.session) {
-    redirect('/dashboard')
-  }
+  await admin.from('profiles').upsert({
+    id: data.user.id,
+    email,
+    full_name: fullName,
+    university,
+    study_year: studyYear,
+  })
 
   redirect('/login?registered=1')
 }
 
 export async function loginAction(formData: FormData): Promise<AuthResult> {
   const email = normalizeEmail(String(formData.get('email') ?? ''))
+  const password = String(formData.get('password') ?? '')
+
+  const supabase = await createServerClient()
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  })
+
+  if (error) {
+    return { error: 'بيانات الدخول غير صحيحة' }
+  }
+
+  redirect('/dashboard')
+}
+
+export async function logoutAction() {
+  const supabase = await createServerClient()
+  await supabase.auth.signOut()
+  redirect('/')
+    }  const email = normalizeEmail(String(formData.get('email') ?? ''))
   const password = String(formData.get('password') ?? '')
 
   if (!email || !password) {

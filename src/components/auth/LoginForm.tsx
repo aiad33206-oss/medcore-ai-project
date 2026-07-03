@@ -1,12 +1,8 @@
-// ═══════════════════════════════════════════════
-// MedCore AI — Login Form (client component)
-// Copyright © abdoayad
-// ═══════════════════════════════════════════════
-
 'use client'
 
 import { useState } from 'react'
-import { loginAction } from '@/lib/supabase/actions'
+import { authClient } from '@/lib/auth-client'
+import { useRouter } from 'next/navigation'
 
 const inputClass =
   'w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-border text-white text-sm outline-none placeholder:text-g500 focus:border-teal/50 focus:ring-2 focus:ring-teal/10 transition-colors'
@@ -14,24 +10,46 @@ const inputClass =
 export function LoginForm({ notice }: { notice?: string }) {
   const [error, setError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
+  const router = useRouter()
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
     setError(null)
     setIsPending(true)
 
     try {
-      const result = await loginAction(formData)
+      const formData = new FormData(e.currentTarget)
+      const email = String(formData.get('email') ?? '')
+      const password = String(formData.get('password') ?? '')
 
-      if (result && 'error' in result) {
-        setError(result.error)
+      if (!email || !password) {
+        setError('الرجاء إدخال البريد الإلكتروني وكلمة المرور')
+        setIsPending(false)
+        return
       }
-    } finally {
+
+      const result = await authClient.signIn.email({
+        email,
+        password,
+      })
+
+      if (result.error) {
+        setError(result.error.message || 'فشل تسجيل الدخول')
+        setIsPending(false)
+        return
+      }
+
+      router.push('/')
+      router.refresh()
+    } catch (err) {
+      console.error('[v0] Login error:', err)
+      setError('حدث خطأ أثناء تسجيل الدخول')
       setIsPending(false)
     }
   }
 
   return (
-    <form action={handleSubmit} className="flex flex-col gap-4" aria-busy={isPending}>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4" aria-busy={isPending}>
       {notice ? (
         <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/30 px-4 py-3 text-emerald-300 text-sm">
           {notice}

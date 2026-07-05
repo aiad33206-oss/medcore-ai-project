@@ -51,13 +51,13 @@ export default function HomePage() {
 
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/register"
+              href="/sign-up"
               className="rounded-xl bg-teal px-6 py-3.5 text-sm font-bold text-bg transition-transform hover:scale-[1.01]"
             >
               ابدأ تجربتك المجانية
             </Link>
             <Link
-              href="/login"
+              href="/sign-in"
               className="rounded-xl border border-border bg-white/[0.03] px-6 py-3.5 text-sm font-medium transition-colors hover:bg-white/[0.06]"
             >
               سجل دخول

@@ -5,6 +5,7 @@
 
 import Link from 'next/link'
 import { LoginForm } from '@/components/auth/LoginForm'
+import { LogoIntro } from '@/components/LogoIntro'
 
 export const metadata = { title: 'تسجيل الدخول' }
 
@@ -30,14 +31,10 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
     <main className="min-h-screen bg-bg px-6 py-10 text-white">
       <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
         <section className="space-y-8">
-          <Link href="/" className="inline-flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet text-xs font-bold text-white font-en">
-              AI
+          <Link href="/" className="inline-block">
+            <div className="w-64">
+              <LogoIntro variant="onDark" className="w-full" />
             </div>
-            <span className="font-en text-2xl font-bold">
-              <span className="text-white">Med</span>
-              <span className="text-teal">Core</span>
-            </span>
           </Link>
 
           <div className="max-w-xl space-y-4">
@@ -88,4 +85,4 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
       </div>
     </main>
   )
-    }
+}

@@ -41,11 +41,9 @@ export function RegisterForm() {
         email,
         password,
         name,
-        data: {
-          university,
-          study_year: parseInt(study_year),
-        },
-      })
+        university,
+        study_year,
+      } as any)
 
       if (result.error) {
         setError(result.error.message || 'فشل إنشاء الحساب')

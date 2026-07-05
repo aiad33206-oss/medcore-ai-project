@@ -14,6 +14,24 @@ export const auth = betterAuth({
     enabled: true,
     autoSignIn: true,
   },
+  user: {
+    fields: {
+      email: 'email',
+      name: 'name',
+      image: 'image',
+      emailVerified: 'emailVerified',
+    },
+    additionalFields: {
+      university: {
+        type: 'string',
+        required: false,
+      },
+      study_year: {
+        type: 'string',
+        required: false,
+      },
+    },
+  },
   trustedOrigins: [
     ...(process.env.V0_RUNTIME_URL ? [process.env.V0_RUNTIME_URL] : []),
     ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),

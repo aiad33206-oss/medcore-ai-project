@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { createServerClient } from '@/lib/supabase/client'
-import { logoutAction } from '@/lib/supabase/actions'
+import { auth } from '@/lib/auth'
+import { headers } from 'next/headers'
 
 const yearLabel: Record<number, string> = {
   1: 'الأولى',
@@ -25,33 +25,33 @@ const statusLabel: Record<string, string> = {
   trial: 'تجريبي',
 }
 
-function formatDate(value?: string | null) {
+function formatDate(value?: string | Date | null) {
   if (!value) return 'غير متاح'
 
+  const date = typeof value === 'string' ? new Date(value) : value
   return new Intl.DateTimeFormat('ar-EG', {
     dateStyle: 'medium',
     timeStyle: 'short',
-  }).format(new Date(value))
+  }).format(date)
+}
+
+async function logoutAction() {
+  'use server'
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (session) {
+    await auth.api.signOut({ headers: await headers() })
+  }
+  redirect('/sign-in')
 }
 
 export default async function DashboardPage() {
-  const supabase = await createServerClient()
+  const session = await auth.api.getSession({ headers: await headers() })
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  if (!session?.user) redirect('/sign-in')
 
-  if (!user) redirect('/login')
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name, role, study_year, subscription_tier, subscription_status, university, last_seen_at')
-    .eq('id', user.id)
-    .maybeSingle()
-
-  const studyYear = profile?.study_year ?? null
-  const subscriptionTier = profile?.subscription_tier ?? 'free'
-  const subscriptionStatus = profile?.subscription_status ?? 'active'
+  const user = session.user
+  const studyYear = user.study_year ?? null
+  const university = user.university ?? null
 
   return (
     <main className="min-h-screen bg-bg px-6 py-10 text-white">
@@ -60,7 +60,7 @@ export default async function DashboardPage() {
           <div>
             <p className="text-sm text-g300">لوحة التحكم</p>
             <h1 className="mt-2 text-3xl md:text-4xl font-bold">
-              أهلاً {profile?.full_name ?? 'بك'}
+              أهلاً {user.name ?? 'بك'}
             </h1>
             <p className="mt-3 max-w-2xl text-g300">
               هنا هتتابع بياناتك الأساسية، والحالة الحالية للحساب، وتمهيد
@@ -82,51 +82,44 @@ export default async function DashboardPage() {
           <div className="rounded-2xl border border-border bg-white/[0.03] p-6">
             <p className="text-sm text-g300">الاسم</p>
             <p className="mt-3 text-xl font-semibold">
-              {profile?.full_name ?? 'غير محدد'}
+              {user.name ?? 'غير محدد'}
             </p>
           </div>
 
           <div className="rounded-2xl border border-border bg-white/[0.03] p-6">
-            <p className="text-sm text-g300">السنة الدراسية</p>
-            <p className="mt-3 text-xl font-semibold">
-              {studyYear ? `السنة ${yearLabel[studyYear]}` : 'لم تُحدد'}
+            <p className="text-sm text-g300">البريد الإلكتروني</p>
+            <p className="mt-3 text-xl font-semibold break-all text-base">
+              {user.email}
             </p>
           </div>
 
           <div className="rounded-2xl border border-border bg-white/[0.03] p-6">
             <p className="text-sm text-g300">الجامعة</p>
             <p className="mt-3 text-xl font-semibold">
-              {profile?.university ?? 'غير محددة'}
+              {university ?? 'غير محددة'}
             </p>
           </div>
 
           <div className="rounded-2xl border border-border bg-white/[0.03] p-6">
-            <p className="text-sm text-g300">الخطة</p>
+            <p className="text-sm text-g300">السنة الدراسية</p>
             <p className="mt-3 text-xl font-semibold">
-              {tierLabel[subscriptionTier] ?? subscriptionTier}
+              {studyYear ? `السنة ${yearLabel[parseInt(studyYear)]}` : 'لم تُحدد'}
             </p>
           </div>
         </section>
 
-        <section className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <section className="mt-4 grid gap-4 md:grid-cols-2">
           <div className="rounded-2xl border border-border bg-white/[0.03] p-6">
-            <p className="text-sm text-g300">حالة الاشتراك</p>
+            <p className="text-sm text-g300">حالة البريد الإلكتروني</p>
             <p className="mt-3 text-xl font-semibold">
-              {statusLabel[subscriptionStatus] ?? subscriptionStatus}
+              {user.emailVerified ? '✅ مؤكد' : '⏳ قيد التأكيد'}
             </p>
           </div>
 
           <div className="rounded-2xl border border-border bg-white/[0.03] p-6">
-            <p className="text-sm text-g300">الدور</p>
+            <p className="text-sm text-g300">تاريخ الانضمام</p>
             <p className="mt-3 text-xl font-semibold">
-              {profile?.role ?? 'student'}
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-border bg-white/[0.03] p-6">
-            <p className="text-sm text-g300">آخر دخول</p>
-            <p className="mt-3 text-xl font-semibold">
-              {formatDate(profile?.last_seen_at)}
+              {formatDate(user.createdAt)}
             </p>
           </div>
         </section>
@@ -151,7 +144,7 @@ export default async function DashboardPage() {
               </Link>
 
               <Link
-                href="/register"
+                href="/sign-up"
                 className="rounded-xl border border-border bg-white/[0.03] px-5 py-3 text-sm font-medium transition-colors hover:bg-white/[0.06]"
               >
                 إنشاء حساب آخر

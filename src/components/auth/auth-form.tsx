@@ -4,10 +4,12 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { authClient } from '@/lib/auth-client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card } from '@/components/ui/card'
+
+const inputClass =
+  'w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-border text-white text-sm outline-none placeholder:text-g500 focus:border-teal/50'
+
+const buttonClass =
+  'w-full px-4 py-3 rounded-xl bg-teal text-bg font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-50'
 
 export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
   const router = useRouter()
@@ -24,97 +26,117 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
     setError(null)
     setLoading(true)
 
-    const { error } = isSignUp
-      ? await authClient.signUp.email({ email, password, name })
-      : await authClient.signIn.email({ email, password })
+    try {
+      const response = isSignUp
+        ? await authClient.signUp.email({ email, password, name })
+        : await authClient.signIn.email({ email, password })
 
-    setLoading(false)
+      const error = response?.error
+      setLoading(false)
 
-    if (error) {
-      setError(error.message ?? 'Something went wrong')
-      return
+      if (error) {
+        setError((error as any)?.message ?? 'Something went wrong')
+        return
+      }
+
+      router.push('/dashboard')
+      router.refresh()
+    } catch (err) {
+      setLoading(false)
+      setError((err as any)?.message ?? 'Something went wrong')
     }
-
-    router.push('/')
-    router.refresh()
   }
 
   return (
-    <main className="min-h-svh bg-background flex items-center justify-center px-4">
-      <Card className="w-full max-w-sm p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            {isSignUp ? 'Create an account' : 'Welcome back'}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {isSignUp
-              ? 'Sign up to get started'
-              : 'Sign in to your account to continue'}
-          </p>
-        </div>
+    <div className="min-h-svh bg-bg flex items-center justify-center px-4 text-white">
+      <div className="w-full max-w-md">
+        <div className="rounded-2xl border border-border bg-card/95 p-8">
+          <div className="mb-8 text-center">
+            <h1 className="text-2xl font-bold">
+              {isSignUp ? 'إنشاء حساب' : 'تسجيل الدخول'}
+            </h1>
+            <p className="text-sm text-g300 mt-2">
+              {isSignUp
+                ? 'انضم إلى منصتنا الآن'
+                : 'رحباً بعودتك'}
+            </p>
+          </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {isSignUp && (
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {isSignUp && (
+              <div className="flex flex-col gap-2">
+                <label htmlFor="name" className="text-sm font-medium">
+                  الاسم الكامل
+                </label>
+                <input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  autoComplete="name"
+                  className={inputClass}
+                  placeholder="أدخل اسمك الكامل"
+                />
+              </div>
+            )}
             <div className="flex flex-col gap-2">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+              <label htmlFor="email" className="text-sm font-medium">
+                البريد الإلكتروني
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
-                autoComplete="name"
+                autoComplete="email"
+                className={inputClass}
+                placeholder="example@email.com"
               />
             </div>
-          )}
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={8}
-              autoComplete={isSignUp ? 'new-password' : 'current-password'}
-            />
-          </div>
+            <div className="flex flex-col gap-2">
+              <label htmlFor="password" className="text-sm font-medium">
+                كلمة المرور
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={8}
+                autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                className={inputClass}
+                placeholder="••••••••"
+              />
+            </div>
 
-          {error && (
-            <p className="text-sm text-destructive" role="alert">
-              {error}
-            </p>
-          )}
+            {error && (
+              <p className="text-sm text-red-500 text-center" role="alert">
+                {error}
+              </p>
+            )}
 
-          <Button type="submit" disabled={loading} className="w-full">
-            {loading
-              ? 'Please wait...'
-              : isSignUp
-                ? 'Create account'
-                : 'Sign in'}
-          </Button>
-        </form>
+            <button type="submit" disabled={loading} className={buttonClass}>
+              {loading
+                ? 'جاري المعالجة...'
+                : isSignUp
+                  ? 'إنشاء حساب'
+                  : 'تسجيل الدخول'}
+            </button>
+          </form>
 
-        <p className="text-sm text-muted-foreground text-center mt-6">
-          {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
-          <Link
-            href={isSignUp ? '/sign-in' : '/sign-up'}
-            className="text-foreground font-medium underline-offset-4 hover:underline"
-          >
-            {isSignUp ? 'Sign in' : 'Sign up'}
-          </Link>
-        </p>
-      </Card>
-    </main>
+          <p className="text-sm text-g300 text-center mt-6">
+            {isSignUp ? 'لديك حساب بالفعل؟ ' : 'ليس لديك حساب؟ '}
+            <Link
+              href={isSignUp ? '/sign-in' : '/sign-up'}
+              className="text-teal font-semibold hover:underline"
+            >
+              {isSignUp ? 'سجل دخول' : 'أنشئ حسابًا'}
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
   )
 }

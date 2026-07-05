@@ -2,11 +2,10 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['*.supabase.co', 'supabase.co'],
     formats: ['image/avif', 'image/webp'],
   },
   experimental: {
-    serverComponentsExternalPackages: ['sharp'],
+    serverComponentsExternalPackages: ['pg'],
   },
   headers: async () => [
     {

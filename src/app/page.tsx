@@ -4,7 +4,8 @@
 // ═══════════════════════════════════════════════
 
 import Link from 'next/link'
-
+import Link from 'next/link'
+import { LogoIntro } from '@/components/LogoIntro'
 const stats = [
   { value: '6', label: 'سنوات دراسية' },
   { value: 'AI', label: 'Agent جاهز للتوسعة' },
@@ -22,15 +23,9 @@ export default function HomePage() {
     <main className="min-h-screen bg-bg text-white">
       <div className="mx-auto grid min-h-screen max-w-6xl items-center gap-12 px-6 py-14 lg:grid-cols-[1.05fr_0.95fr]">
         <section className="space-y-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet text-xs font-bold text-white font-en">
-              AI
-            </div>
-            <div className="font-en text-2xl font-bold">
-              <span className="text-white">Med</span>
-              <span className="text-teal">Core</span>
-            </div>
-          </div>
+          <div className="w-72">
+           <LogoIntro variant="onDark" className="w-full" />
+           </div>
 
           <div className="space-y-5">
             <span className="inline-flex rounded-full border border-border bg-white/[0.03] px-4 py-2 text-xs text-g300">

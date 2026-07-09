@@ -15,6 +15,16 @@ export default async function SignInPage() {
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
+        <Link href="/" className="mb-8 flex items-center justify-center gap-2">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet text-xs font-bold text-white font-en">
+            AI
+          </div>
+          <div className="font-en text-2xl font-bold">
+            <span className="text-white">Med</span>
+            <span className="text-teal">Core</span>
+          </div>
+        </Link>
+
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-foreground mb-2">تسجيل الدخول</h1>
           <p className="text-g400">أهلاً بعودتك إلى MedCore AI</p>

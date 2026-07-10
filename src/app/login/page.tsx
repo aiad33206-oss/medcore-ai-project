@@ -5,7 +5,7 @@
 
 import Link from 'next/link'
 import { LoginForm } from '@/components/auth/LoginForm'
-import { LogoIntro } from '@/components/LogoIntro'
+import { LogoIntro } from '@/components/auth/LogoIntro'
 
 export const metadata = { title: 'تسجيل الدخول' }
 

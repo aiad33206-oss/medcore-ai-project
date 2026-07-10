@@ -4,7 +4,6 @@
 // ═══════════════════════════════════════════════
 
 import Link from 'next/link'
-import Link from 'next/link'
 import { LogoIntro } from '@/components/LogoIntro'
 const stats = [
   { value: '6', label: 'سنوات دراسية' },

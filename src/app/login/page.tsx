@@ -33,7 +33,7 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
         <section className="space-y-8">
           <Link href="/" className="inline-block">
             <div className="w-64">
-              <LogoIntro variant="onDark" className="w-full" />
+              <LogoIntro className="w-full" />
             </div>
           </Link>
 

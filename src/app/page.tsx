@@ -23,7 +23,7 @@ export default function HomePage() {
       <div className="mx-auto grid min-h-screen max-w-6xl items-center gap-12 px-6 py-14 lg:grid-cols-[1.05fr_0.95fr]">
         <section className="space-y-8">
           <div className="w-72">
-           <LogoIntro variant="onDark" className="w-full" />
+           <LogoIntro className="w-full" />
            </div>
 
           <div className="space-y-5">

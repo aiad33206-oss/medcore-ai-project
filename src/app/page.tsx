@@ -4,8 +4,7 @@
 // ═══════════════════════════════════════════════
 
 import Link from 'next/link'
-import Link from 'next/link'
-import { LogoIntro } from '@/components/LogoIntro'
+import { LogoIntro } from '@/components/auth/LogoIntro'
 const stats = [
   { value: '6', label: 'سنوات دراسية' },
   { value: 'AI', label: 'Agent جاهز للتوسعة' },

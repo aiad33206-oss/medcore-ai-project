@@ -1,0 +1,484 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OTP Verification Component</title>
+    <style>
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0d0d1a;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  overflow: hidden;
+}
+
+.bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+}
+
+.blob-1 {
+  width: 320px;
+  height: 320px;
+  background: #7c3aed;
+  top: 10px;
+  left: 20%;
+  opacity: 0.3;
+}
+.blob-2 {
+  width: 180px;
+  height: 180px;
+  background: #db2777;
+  bottom: 20%;
+  left: 60%;
+  opacity: 0.3;
+}
+
+.card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding: 44px 40px;
+  width: 280px;
+  max-width: 92vw;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 10%;
+  width: 80%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.35),
+    transparent
+  );
+  border-radius: 1px;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: -0.3px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.card-sub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+  line-height: 1.6;
+  margin-top: -10px;
+}
+
+.card-sub strong {
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 600;
+}
+
+.otp-row {
+  display: flex;
+  gap: 10px;
+}
+
+.otp-box {
+  width: 40px;
+  height: 50px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  position: relative;
+  cursor: text;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.otp-box.active {
+  border-color: rgba(139, 92, 246, 0.85);
+  background: rgba(139, 92, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.otp-box.filled {
+  border-color: rgba(139, 92, 246, 0.45);
+  background: rgba(139, 92, 246, 0.08);
+}
+
+.otp-box.success {
+  border-color: rgba(34, 197, 94, 0.7) !important;
+  background: rgba(34, 197, 94, 0.08) !important;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18) !important;
+}
+
+.otp-box.error {
+  border-color: rgba(239, 68, 68, 0.7) !important;
+  background: rgba(239, 68, 68, 0.08) !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18) !important;
+}
+
+.otp-box .caret {
+  display: none;
+  width: 2px;
+  height: 26px;
+  background: rgba(139, 92, 246, 0.9);
+  border-radius: 2px;
+  animation: blink 1s step-end infinite;
+}
+
+.otp-box.active:not(.filled) .caret {
+  display: block;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.otp-box .digit {
+  position: absolute;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.otp-box .digit.enter {
+  animation: digitIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes digitIn {
+  0% {
+    transform: translateY(20px) scale(0.6);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  15% {
+    transform: translateX(-7px);
+  }
+  30% {
+    transform: translateX(7px);
+  }
+  45% {
+    transform: translateX(-5px);
+  }
+  60% {
+    transform: translateX(5px);
+  }
+  75% {
+    transform: translateX(-3px);
+  }
+  90% {
+    transform: translateX(3px);
+  }
+}
+
+.otp-row.shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+.real-input {
+  position: fixed;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.status {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  min-height: 18px;
+  text-align: center;
+}
+
+.status.error {
+  color: #f87171;
+}
+.status.success {
+  color: #4ade80;
+}
+
+.verify-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(120deg, #7c3aed, #a855f7);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.verify-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px 12px 0 0;
+}
+
+.verify-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.5);
+}
+
+.verify-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.verify-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  transform: none;
+  box-shadow: none;
+}
+
+.hint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.25);
+  text-align: center;
+}
+
+.hint span {
+  color: rgba(139, 92, 246, 0.8);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.hint span:hover {
+  color: #a78bfa;
+}
+    </style>
+  </head>
+  <body>
+    <div class="bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Verify your identity</div>
+      <div class="card-sub">
+        Enter the 6-digit code sent to<br />
+        <strong>pro***@gmail.com</strong>
+      </div>
+
+      <div class="otp-row" id="otpRow">
+        <div class="otp-box" data-i="0">
+          <span class="caret"></span><span class="digit"></span>
+        </div>
+        <div class="otp-box" data-i="1">
+          <span class="caret"></span><span class="digit"></span>
+        </div>
+        <div class="otp-box" data-i="2">
+          <span class="caret"></span><span class="digit"></span>
+        </div>
+        <div class="otp-box" data-i="3">
+          <span class="caret"></span><span class="digit"></span>
+        </div>
+        <div class="otp-box" data-i="4">
+          <span class="caret"></span><span class="digit"></span>
+        </div>
+      </div>
+
+      <input
+        class="real-input"
+        id="realInput"
+        type="tel"
+        maxlength="5"
+        inputmode="numeric"
+      />
+
+      <div class="status" id="status"></div>
+
+      <button class="verify-btn" id="verifyBtn" disabled>Verify code</button>
+
+      <div class="hint">
+        Didn't receive a code? <span onclick="resend()">Resend</span>
+      </div>
+    </div>
+
+    <script>
+
+const boxes  = [...document.querySelectorAll('.otp-box')];
+const input  = document.getElementById('realInput');
+const btn    = document.getElementById('verifyBtn');
+const row    = document.getElementById('otpRow');
+const status = document.getElementById('status');
+
+const CORRECT = '12345';
+let values = Array(5).fill('');
+let locked = false;
+
+function focusInput() { input.focus({ preventScroll: true }); }
+document.querySelector('.card').addEventListener('click', focusInput);
+focusInput();
+setActive(0);
+
+function setActive(i) {
+  boxes.forEach((b, j) => b.classList.toggle('active', j === i));
+}
+
+function render() {
+  boxes.forEach((b, i) => {
+    const d = b.querySelector('.digit');
+    const v = values[i];
+    if (v) {
+      b.classList.add('filled');
+      d.textContent = v;
+    } else {
+      b.classList.remove('filled');
+      d.textContent = '';
+    }
+  });
+  btn.disabled = values.filter(Boolean).length < 5;
+}
+
+input.addEventListener('input', e => {
+  if (locked) return;
+  clearStyles();
+  const raw = e.target.value.replace(/\D/g, '').slice(0, 5);
+  e.target.value = raw;
+  raw.split('').forEach((ch, i) => {
+    if (values[i] !== ch) {
+      values[i] = ch;
+      const d = boxes[i].querySelector('.digit');
+      d.classList.remove('enter');
+      void d.offsetWidth;
+      d.classList.add('enter');
+    }
+  });
+  for (let i = raw.length; i < 5; i++) values[i] = '';
+  setActive(Math.min(raw.length, 5));
+  render();
+});
+
+input.addEventListener('keydown', e => {
+  if (locked) return;
+  if (e.key === 'Backspace') {
+    const cur = values.map((v,i) => v ? i : -1).filter(i => i >= 0).pop() ?? -1;
+    if (cur >= 0) {
+      values[cur] = '';
+      input.value = values.join('');
+      render();
+      setActive(cur);
+    }
+  }
+});
+
+function clearStyles() {
+  status.textContent = '';
+  status.className = 'status';
+  boxes.forEach(b => b.classList.remove('success', 'error'));
+  row.classList.remove('shake');
+}
+
+btn.addEventListener('click', verify);
+
+function verify() {
+  if (locked) return;
+  if (values.join('') === CORRECT) {
+    locked = true;
+    boxes.forEach(b => b.classList.add('success'));
+    status.textContent = '✓ Code verified successfully';
+    status.className = 'status success';
+    btn.disabled = true;
+    btn.textContent = '✓ Verified';
+    btn.style.background = 'linear-gradient(120deg, #16a34a, #22c55e)';
+    btn.style.boxShadow = '0 6px 20px rgba(34,197,94,0.4)';
+  } else {
+    boxes.forEach(b => b.classList.add('error'));
+    status.textContent = 'Incorrect code — try again';
+    status.className = 'status error';
+    row.classList.remove('shake');
+    void row.offsetWidth;
+    row.classList.add('shake');
+    setTimeout(() => {
+      clearStyles();
+      values = Array(5).fill('');
+      input.value = '';
+      render();
+      setActive(0);
+      focusInput();
+    }, 900);
+  }
+}
+
+function resend() {
+  if (locked) return;
+  clearStyles();
+  values = Array(5).fill('');
+  input.value = '';
+  render();
+  setActive(0);
+  status.textContent = 'New code sent!';
+  status.className = 'status success';
+  setTimeout(() => { status.textContent = ''; status.className = 'status'; }, 2000);
+  focusInput();
+}
+    </script>
+  </body>
+</html>

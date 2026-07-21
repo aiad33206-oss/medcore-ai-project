@@ -1,8 +1,3 @@
-// ═══════════════════════════════════════════════
-// MedCore AI — Login Form (client component)
-// Copyright © abdoayad
-// ═══════════════════════════════════════════════
-
 'use client'
 
 import { useState, useTransition } from 'react'
@@ -13,8 +8,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { loginAction } from '@/lib/supabase/actions'
-
-const TEAL = '#00B894'
 
 type LoginFormProps = {
   notice?: string
@@ -39,16 +32,18 @@ export function LoginForm({ notice }: LoginFormProps) {
       className="space-y-5"
     >
       {notice && (
-        <Alert className="border-teal-200 bg-teal-50 rounded-xl">
-          <AlertDescription className="text-sm" style={{ color: '#00725b' }}>
+        <Alert className="rounded-xl border-primary/20 bg-primary/5">
+          <AlertDescription className="text-sm text-foreground">
             {notice}
           </AlertDescription>
         </Alert>
       )}
 
       {error && (
-        <Alert className="border-red-200 bg-red-50 rounded-xl">
-          <AlertDescription className="text-sm text-red-600">{error}</AlertDescription>
+        <Alert className="rounded-xl border-destructive/20 bg-destructive/5">
+          <AlertDescription className="text-sm text-destructive">
+            {error}
+          </AlertDescription>
         </Alert>
       )}
 
@@ -61,12 +56,13 @@ export function LoginForm({ notice }: LoginFormProps) {
           autoComplete="email"
           required
           placeholder="you@example.com"
-          className="h-11 rounded-xl"
+          className="h-11 rounded-xl border-border/70 bg-background/70 focus-visible:ring-2 focus-visible:ring-primary/20"
         />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="password">كلمة المرور</Label>
+
         <div className="relative">
           <Input
             id="password"
@@ -75,14 +71,14 @@ export function LoginForm({ notice }: LoginFormProps) {
             autoComplete="current-password"
             required
             placeholder="••••••••"
-            className="h-11 rounded-xl pl-10"
+            className="h-11 rounded-xl border-border/70 bg-background/70 pl-10 focus-visible:ring-2 focus-visible:ring-primary/20"
           />
+
           <button
             type="button"
             onClick={() => setShowPassword((s) => !s)}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
             tabIndex={-1}
-            aria-label={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
@@ -92,14 +88,14 @@ export function LoginForm({ notice }: LoginFormProps) {
       <Button
         type="submit"
         disabled={isPending}
-        className="w-full h-11 rounded-xl font-semibold text-white bg-primary hover:bg-primary/90 transition-all"
+        className="h-11 w-full rounded-xl bg-primary font-semibold text-primary-foreground transition-all hover:bg-primary/90"
       >
         {isPending ? 'جاري التحقق...' : 'تسجيل الدخول'}
       </Button>
 
-      <p className="text-center text-sm text-gray-500">
+      <p className="text-center text-sm text-muted-foreground">
         ليس لديك حساب؟{' '}
-        <Link href="/register" className="font-semibold" style={{ color: TEAL }}>
+        <Link href="/register" className="font-semibold text-primary hover:underline">
           أنشئ حسابًا
         </Link>
       </p>

@@ -6,6 +6,12 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        ring: "hsl(var(--ring))",
+        input: "hsl(var(--input))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        primary: { DEFAULT: "hsl(var(--primary))", foreground: "hsl(var(--primary-foreground))" },
+        secondary: { DEFAULT: "hsl(var(--secondary))", foreground: "hsl(var(--secondary-foreground))" },
         // Brand
         teal:   { DEFAULT: '#00F5D4', dim: '#00C4AA', glow: 'rgba(0,245,212,0.15)' },
         violet: { DEFAULT: '#8B5CF6', dim: '#6D3FD4', glow: 'rgba(139,92,246,0.15)' },

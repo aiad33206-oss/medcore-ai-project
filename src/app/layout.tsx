@@ -4,13 +4,10 @@
 // ═══════════════════════════════════════════════
 
 import type { Metadata } from 'next'
-import { IBM_Plex_Sans_Arabic, Space_Grotesk, Geist } from 'next/font/google'
+import { IBM_Plex_Sans_Arabic, Space_Grotesk } from 'next/font/google'
 import { ThemeProvider } from 'next-themes'
 import { Toaster } from 'sonner'
 import './globals.css'
-import { cn } from "@/lib/utils";
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const ibmPlexArabic = IBM_Plex_Sans_Arabic({
   subsets: ['arabic'],
@@ -58,7 +55,7 @@ export const metadata: Metadata = {
   robots: {
     index: true, follow: true,
     googleBot: { index: true, follow: true, 'max-video-preview': -1, 'max-image-preview': 'large', 'max-snippet': -1 },
-  },
+  }
   alternates: {
     canonical: 'https://medcoreai.com',
     languages: { 'ar': 'https://medcoreai.com', 'en': 'https://medcoreai.com/en' },
@@ -70,7 +67,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning className={cn("font-sans", geist.variable)}>
+   <html lang="ar" dir="rtl" suppressHydrationWarning className="font-sans">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />

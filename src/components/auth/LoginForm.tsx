@@ -5,82 +5,105 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
+import Link from 'next/link'
+import { Eye, EyeOff } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { loginAction } from '@/lib/supabase/actions'
 
-const inputClass =
-  'w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-border text-white text-sm outline-none placeholder:text-g500 focus:border-teal/50 focus:ring-2 focus:ring-teal/10 transition-colors'
+const TEAL = '#00B894'
 
-export function LoginForm({ notice }: { notice?: string }) {
+type LoginFormProps = {
+  notice?: string
+}
+
+export function LoginForm({ notice }: LoginFormProps) {
   const [error, setError] = useState<string | null>(null)
-  const [isPending, setIsPending] = useState(false)
-
-  async function handleSubmit(formData: FormData) {
-    setError(null)
-    setIsPending(true)
-
-    try {
-      const result = await loginAction(formData)
-
-      if (result && 'error' in result) {
-        setError(result.error)
-      }
-    } finally {
-      setIsPending(false)
-    }
-  }
+  const [showPassword, setShowPassword] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
   return (
-    <form action={handleSubmit} className="flex flex-col gap-4" aria-busy={isPending}>
-      {notice ? (
-        <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/30 px-4 py-3 text-emerald-300 text-sm">
-          {notice}
-        </div>
-      ) : null}
-
-      <div>
-        <label className="block text-sm text-g300 mb-2 font-medium">
-          البريد الإلكتروني
-        </label>
-        <input
-          name="email"
-          type="email"
-          required
-          autoComplete="email"
-          dir="rtl"
-          placeholder="you@example.com"
-          className={inputClass}
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm text-g300 mb-2 font-medium">
-          كلمة المرور
-        </label>
-        <input
-          name="password"
-          type="password"
-          required
-          autoComplete="current-password"
-          dir="rtl"
-          placeholder="اكتب كلمة المرور"
-          className={inputClass}
-        />
-      </div>
-
-      {error && (
-        <div className="rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-red-300 text-sm">
-          {error}
-        </div>
+    <form
+      action={(formData: FormData) => {
+        setError(null)
+        startTransition(async () => {
+          const result = await loginAction(formData)
+          if (result && 'error' in result) {
+            setError(result.error)
+          }
+        })
+      }}
+      className="space-y-5"
+    >
+      {notice && (
+        <Alert className="border-teal-200 bg-teal-50 rounded-xl">
+          <AlertDescription className="text-sm" style={{ color: '#00725b' }}>
+            {notice}
+          </AlertDescription>
+        </Alert>
       )}
 
-      <button
+      {error && (
+        <Alert className="border-red-200 bg-red-50 rounded-xl">
+          <AlertDescription className="text-sm text-red-600">{error}</AlertDescription>
+        </Alert>
+      )}
+
+      <div className="space-y-2">
+        <Label htmlFor="email">البريد الإلكتروني</Label>
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+          placeholder="you@example.com"
+          className="h-11 rounded-xl"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="password">كلمة المرور</Label>
+        <div className="relative">
+          <Input
+            id="password"
+            name="password"
+            type={showPassword ? 'text' : 'password'}
+            autoComplete="current-password"
+            required
+            placeholder="••••••••"
+            className="h-11 rounded-xl pl-10"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((s) => !s)}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            tabIndex={-1}
+            aria-label={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        </div>
+      </div>
+
+      <Button
         type="submit"
         disabled={isPending}
-        className="mt-2 w-full rounded-xl bg-teal px-4 py-3.5 font-bold text-bg text-sm transition-transform duration-200 hover:scale-[1.01] disabled:opacity-60 disabled:hover:scale-100"
+        className="w-full h-11 rounded-xl font-semibold text-white"
+        style={{ backgroundColor: '#0D1B3D' }}
       >
-        {isPending ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
-      </button>
+        {isPending ? 'جاري التحقق...' : 'تسجيل الدخول'}
+      </Button>
+
+      <p className="text-center text-sm text-gray-500">
+        ليس لديك حساب؟{' '}
+        <Link href="/register" className="font-semibold" style={{ color: TEAL }}>
+          أنشئ حسابًا
+        </Link>
+      </p>
     </form>
   )
 }

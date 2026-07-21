@@ -84,8 +84,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${ibmPlexArabic.variable} ${spaceGrotesk.variable} font-ar antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
+          defaultTheme="system"
+          enableSystem
           disableTransitionOnChange
         >
           {children}

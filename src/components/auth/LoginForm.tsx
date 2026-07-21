@@ -92,8 +92,7 @@ export function LoginForm({ notice }: LoginFormProps) {
       <Button
         type="submit"
         disabled={isPending}
-        className="w-full h-11 rounded-xl font-semibold text-white"
-        bg-primary hover:bg-primary/90 transition-all
+        className="w-full h-11 rounded-xl font-semibold text-white bg-primary hover:bg-primary/90 transition-all"
       >
         {isPending ? 'جاري التحقق...' : 'تسجيل الدخول'}
       </Button>
